@@ -9,5 +9,6 @@ setup(
     author_email='',
     license='unlicense',
     packages=['db_interface'],
+    install_requires=['pymongo', 'python-dotenv', 'bson', 'pandas', 'scrapy'],
     zip_safe=False
 )
