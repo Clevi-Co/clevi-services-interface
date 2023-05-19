@@ -1,0 +1,137 @@
+Mele
+Arance
+Banane
+Uva
+Fragole
+Mirtilli
+More
+Lamponi
+Anguria
+Cantalupo
+Melone verde
+Ananas
+Mango
+Papaia
+Avocado
+Pomodori
+Cetrioli
+Carote
+Sedano
+Broccoli
+Cavolfiore
+Spinaci
+Lattuga
+cavolo
+Rucola
+Ravanelli
+cipolle rosse
+Cipolle gialle
+Cipolle verdi
+Aglio
+Patate
+Patate dolci
+Ignami
+Zucca Butternut
+Zucca di ghiande
+Spaghetti alla zucca
+Zucchine
+Zucca gialla
+Melanzana
+Peperoni
+Peperoni jalapeno
+Peperoni serrani
+Peperoni Habanero
+Funghi
+Cavolo
+cavoletti di Bruxelles
+Fagioli verdi
+Pannocchie
+Piselli
+fagioli di Lima
+Fagioli neri
+Fagioli rossi
+Ceci
+Lenticchie
+Quinoa
+riso integrale
+riso bianco
+Riso basmati
+riso jasmine
+Riso Arborio
+couscous
+Pasta
+Pane di farina integrale
+pane bianco
+bagel
+Muffin all'inglese
+Cornetti
+Ciambelle
+Muffin
+torte
+Brownies
+Biscotti
+Cracker
+Patatine fritte
+Popcorn
+Cereale
+Fiocchi d'avena
+muesli
+Yogurt
+Formaggio
+Latte
+Latte di soia
+Latte di mandorla
+Latte di cocco
+Crema
+Panna acida
+Burro
+Margarina
+Uova
+Pollo
+Manzo
+Maiale
+Agnello
+Pescare
+Gamberetto
+Granchio
+Aragosta
+Scaloppine
+Molluschi
+Cozze
+tofu
+Tempeh
+seitan
+Burro di noci
+Gelatina/marmellata
+Miele
+sciroppo d'acero
+Nettare di agave
+Zucchero
+zucchero di canna
+Zucchero a velo
+Farina
+Lievito in polvere
+Bicarbonato di sodio
+Lievito
+Sale
+Pepe
+Spezie
+Erbe aromatiche
+Olio d'oliva
+Olio vegetale
+Olio di colza
+Olio di cocco
+olio di sesamo
+Aceto
+Salsa di soia
+Salsa teriyaki
+Salsa piccante
+Salsa barbecue
+Ketchup
+Mostarda
+Maionese
+Condimento per insalata
+Sottaceti
+Olive
+capperi
+Acciughe

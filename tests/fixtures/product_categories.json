@@ -1,0 +1,212 @@
+{
+  "Prodotti freschi": {
+      "Frutta fresca" : [
+        "Mela",
+        "Banana",
+        "Pera"
+      ],
+      "Verdure fresche" : [
+        "Zucchini",
+        "Broccoli",
+        "Cavolfiori"
+      ],
+      "Erbe fresche" : [
+        "Prezzemolo",
+        "Rosmarino"
+      ],
+      "Carne fresca" : [
+        "Carne trita",
+        "Prosciutto"
+      ],
+      "Pollame fresco" : [
+        "Petto di pollo",
+        "Ali di pollo"
+      ],
+      "Pesce fresco" : [
+        "Salmone",
+        "Persico",
+        "Meluzzo"
+      ]
+    },
+  "Bambini e animali": {
+      "Alimenti per bambini e formula" : [
+        "Latte in polvere",
+        "Omogenizzato"
+      ],
+      "Alimenti e forniture per animali domestici" : [
+        "Cibo per cani",
+        "Cibo per gatti",
+        "Cuccetta"
+      ],
+      "Pannolini e salviette" : [
+        "Pannolini",
+        "Salviette per bambini"
+      ]
+    },
+  "Latticini e uova" :  {
+      "Latte" : [
+        "Latte intero",
+        "Latte parzialmente scremato"
+      ],
+      "Formaggio" : [
+        "Formaggio francese",
+        "Formaggio di capra",
+        "Formaggio di mucca"
+      ],
+      "Yogurt" :  [
+        "Yogurt proteico",
+        "Yogurt senza zuccheri"
+      ],
+      "Burro e margarina" :  [
+        "Burro",
+        "Margarina"
+      ],
+      "Uova" : [
+        "Uova di gallina",
+        "Uova di struzzo",
+        "Uova di Emu"
+      ]
+    },
+  "Pane e prodotti da forno" : {
+      "Pane" : [
+        "Baguette",
+        "Pane all'acqua",
+        "Pane senza glutine"
+      ],
+      "Prodotti da forno" :  [
+        "Lievito per pizza",
+        "Pasta per pane"
+      ]
+    },
+  "Pasta e riso" : {
+      "Pasta" : [
+        "Spaghetti n.8",
+        "Penne n.12"
+      ],
+      "Riso" : [
+        "Riso venere",
+        "Riso basmati"
+      ]
+    },
+  "Prodotti in scatola e confezionati" : {
+      "Verdure in scatola" : [
+        "Cetrioli sott'aceto"
+      ],
+      "Frutta in scatola" :  [
+        "Pesche sciroppate",
+        "Ananas in scatola"
+      ],
+      "Carni in scatola" : [
+        "Maiale in scatola"
+      ],
+      "Pesce in scatola" : [
+        "Tonno in scatola"
+      ],
+      "Zuppe in scatola" : [
+        "Zuppa di pomodoro in scatola",
+        "Passato di verdure in scatola"
+      ]
+    },
+  "Condimenti" : {
+      "Condimenti e salse" : [
+        "Senape",
+        "Ketchup",
+        "Maionese"
+      ],
+      "Spezie e condimenti" : [
+        "Sale",
+        "Rosmarino"
+      ],
+      "Oli da cucina" : [
+        "Olio d'oliva",
+        "Olio di girasole"
+      ],
+      "Aceto" : [
+        "Aceto di vino rosso",
+        "Aceto di vino bianco"
+      ],
+      "Zucchero e dolcificanti" : [
+        "Zucchero",
+        "Dolgificant alla stevia"
+      ]
+    },
+  "Bevande" : {
+      "Bevande analcoliche" : [
+        "Cola",
+        "Aranciata",
+        "Chinotto"
+      ],
+      "Succhi" :  [
+        "Succo d'arancia",
+        "Succo di mela",
+        "Succo all'ace"
+      ],
+      "Tè" : [
+        "Tè alla pesca",
+        "Tè al limone",
+        "Tè verde"
+      ],
+      "Caffè" : [
+        "Capsule per caffè",
+        "Caffè decaffeinato",
+        "Caffè istantaneo"
+      ],
+      "Birra e sidro" : [
+        "Birra bionda",
+        "Birra bruna"
+      ],
+      "Vino" : [
+        "Vino rosso",
+        "Vino bianco",
+        "Vino rosè"
+      ],
+      "Liquori e distillati" : [
+        "Mojito",
+        "Vodka"
+      ]
+    },
+  "Snack e caramelle" : {
+      "Noci e semi" : [
+        "Semi di girasole",
+        "Semi di zucca",
+        "Noci"
+      ],
+      "Frutta secca" : [
+        "Arachidi",
+        "Pistacchi",
+        "Nocciole"
+      ],
+      "Biscotti e cracker" : [
+        "Biscotti",
+        "Cracker",
+        "Biscotti al cioccolato"
+      ],
+      "Patatine e salatini" :  [
+        "Patatine",
+        "Bretzel"
+      ],
+      "Cioccolato e caramelle" : [
+        "Barretta di cioccolato",
+        "Caramelle",
+        "Polvere di cioccolato"
+      ]
+    },
+  "Cura della persona e articoli per la casa" : {
+      "Prodotti per l'igiene orale" : [
+        "Spazzolino",
+        "Dentifricio"
+      ],
+      "Prodotti per bagno e doccia" : [
+        "Shampoo",
+        "Bagno-doccia"
+      ],
+      "Forniture per il bucato" : [
+        "Detersivo",
+        "Ammorbidente"
+      ],
+      "Articoli per il giardinaggio" : [
+        "Pala",
+        "Tagliaerba"
+      ]
+    }
+}
