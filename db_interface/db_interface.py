@@ -1,4 +1,4 @@
-from items import ProductStoreDataItem, ProductItem, LocationItem, StoreItem
+from db_interface.items import ProductStoreDataItem, ProductItem, LocationItem, StoreItem
 import pymongo
 from pymongo import UpdateOne
 import logging
@@ -10,6 +10,7 @@ from bson.son import SON
 from math import sqrt, cos, radians
 import pandas as pd
 import csv
+
 
 class DbInterface():
 
@@ -252,13 +253,15 @@ class DbInterface():
 
         def _compute_distance_fast(lat1, lon1, lat2, lon2):
             R = 6371  # radius of the earth in km
-            x = (radians(lon2) - radians(lon1)) * cos(0.5 * (radians(lat2) + radians(lat1)))
+            x = (radians(lon2) - radians(lon1)) * \
+                cos(0.5 * (radians(lat2) + radians(lat1)))
             y = radians(lat2) - radians(lat1)
             d = R * sqrt(x * x + y * y)
             return round(d, 2)
 
         filter_locations = {'postal_codes': postal_code}
-        cursor_locations = self.db[self.COLLECTION_NAME_LOCATIONS].find(filter_locations, {'_id': -1, 'markets': 1})
+        cursor_locations = self.db[self.COLLECTION_NAME_LOCATIONS].find(
+            filter_locations, {'_id': -1, 'markets': 1})
 
         markets = {}
         market_names = set()
@@ -290,13 +293,15 @@ class DbInterface():
             if geo_point is not None:
                 lat_store = geo_point.get('lat')
                 lon_store = geo_point.get('long')
-                store['distance'] = _compute_distance_fast(lat, lon, lat_store, lon_store)
+                store['distance'] = _compute_distance_fast(
+                    lat, lon, lat_store, lon_store)
             else:
                 store['distance'] = 9999
             markets[market_name]['stores'].append(store)
 
         market_names = list(market_names)
-        markets_info = self.get_markets({'name_lower': {'$in': market_names}}, {'_id': 0})
+        markets_info = self.get_markets(
+            {'name_lower': {'$in': market_names}}, {'_id': 0})
         for market_info in markets_info:
             market_name = market_info['name_lower']
             markets[market_name]['meta'] = market_info
@@ -305,7 +310,8 @@ class DbInterface():
         return markets
 
     def get_prices(self, product_ids: list[str], store_id: str):
-        store = self.db[self.COLLECTION_NAME_STORES].find_one({'_id': store_id}, {'_id': 1, 'last_scraped': 1})
+        store = self.db[self.COLLECTION_NAME_STORES].find_one(
+            {'_id': store_id}, {'_id': 1, 'last_scraped': 1})
         if store is None:
             raise KeyError(f'Store {store_id} not found in the db')
 
@@ -357,7 +363,7 @@ class DbInterface():
                 "_id": "$timeseries_meta.product_id",
                 "last_updated": {"$max": "$last_updated"},
                 "scrape_parameters": {"$first": "$scrape_parameters"}}
-            },
+             },
         ])
         return list(distinct_products)
 
@@ -365,15 +371,17 @@ class DbInterface():
         """Return every fast-scraped product since `date_hard` that has not been hard-scraped
         """
         cursor_distinct_products_fast = self.db[self.COLLECTION_NAME_PRODUCT_STORES_DATA].aggregate([
-            {"$match": {"$and": [{"market": market}, {"last_updated": {"$gte": date_hard}}]}},
+            {"$match": {"$and": [{"market": market}, {
+                "last_updated": {"$gte": date_hard}}]}},
             # Group documents by product_id
             {"$group": {
                 "_id": "$timeseries_meta.product_id",
                 "last_updated": {"$max": "$last_updated"},
                 "scrape_parameters": {"$first": "$scrape_parameters"}}
-            },
+             },
         ])
-        cursor_product_ids_scraped = self.db[self.COLLECTION_NAME_PRODUCTS].distinct("_id", {"market": market})
+        cursor_product_ids_scraped = self.db[self.COLLECTION_NAME_PRODUCTS].distinct(
+            "_id", {"market": market})
         products_ids_scraped = set(cursor_product_ids_scraped)
 
         products_scrape_parameters = []
@@ -390,7 +398,8 @@ class DbInterface():
     def extract_brand_data(self, brand_filter):
         """Dump a csv file with the price data of products specified by the brand filter for each store (NO historical, therefore the couple 'store' and 'product_id' is univoque)
         """
-        prod_id_list = list(self.db[self.COLLECTION_NAME_PRODUCTS].distinct('_id', brand_filter))
+        prod_id_list = list(
+            self.db[self.COLLECTION_NAME_PRODUCTS].distinct('_id', brand_filter))
 
         pipeline = [
             {'$match': {'timeseries_meta.product_id': {'$in': prod_id_list}}},
@@ -416,7 +425,8 @@ class DbInterface():
             }}
         ]
 
-        result = self.db[self.COLLECTION_NAME_PRODUCT_STORES_DATA].aggregate(pipeline)
+        result = self.db[self.COLLECTION_NAME_PRODUCT_STORES_DATA].aggregate(
+            pipeline)
 
         df = pd.DataFrame(result)
         # df["year"] = df["last_updated"].apply(lambda x: x.year)
@@ -432,7 +442,8 @@ class DbInterface():
         for i in range(0, len(df["store_universal_id"]), chunk_size):
             ids_chunk = list(df["store_universal_id"][i:i + chunk_size])
             stores_chunk = list(self.db[self.COLLECTION_NAME_STORES].find(
-                {"$and": [{'_id': {'$in': ids_chunk}}, {"meta.lockers": {"$ne": True}}]},
+                {"$and": [{'_id': {'$in': ids_chunk}},
+                          {"meta.lockers": {"$ne": True}}]},
                 {'_id': 1, 'geo_point': 1}
             ))
             stores.extend(stores_chunk)
@@ -443,12 +454,16 @@ class DbInterface():
 
         df["provincia"] = df['store_universal_id'].apply(
             lambda x: geopoints[x]['state_code'] if geopoints.get(x) else None)
-        df["CAP"] = df['store_universal_id'].apply(lambda x: geopoints[x]['postal_code'] if geopoints.get(x) else None)
-        df["address"] = df['store_universal_id'].apply(lambda x: geopoints[x]['address'] if geopoints.get(x) else None)
+        df["CAP"] = df['store_universal_id'].apply(
+            lambda x: geopoints[x]['postal_code'] if geopoints.get(x) else None)
+        df["address"] = df['store_universal_id'].apply(
+            lambda x: geopoints[x]['address'] if geopoints.get(x) else None)
 
         # if internal:
-        df["lat"] = df['store_universal_id'].apply(lambda x: geopoints[x]['lat'] if geopoints.get(x) else None)
-        df["long"] = df['store_universal_id'].apply(lambda x: geopoints[x]['long'] if geopoints.get(x) else None)
+        df["lat"] = df['store_universal_id'].apply(
+            lambda x: geopoints[x]['lat'] if geopoints.get(x) else None)
+        df["long"] = df['store_universal_id'].apply(
+            lambda x: geopoints[x]['long'] if geopoints.get(x) else None)
 
         products = []
         for i in range(0, len(df["product_id"]), chunk_size):
@@ -465,13 +480,18 @@ class DbInterface():
                                    'unit_text': prod['unit_text'], 'ean': prod['ean'],
                                    'description': prod["description"]} for prod in products}
 
-        df["market"] = df['product_id'].apply(lambda x: prod_info[x]['market'] if prod_info[x] else None)
+        df["market"] = df['product_id'].apply(
+            lambda x: prod_info[x]['market'] if prod_info[x] else None)
         df["sales_denomination"] = df['product_id'].apply(
             lambda x: prod_info[x]['sales_denomination'] if prod_info[x] else None)
-        df["unit_value"] = df['product_id'].apply(lambda x: prod_info[x]['unit_value'] if prod_info[x] else None)
-        df["unit_text"] = df['product_id'].apply(lambda x: prod_info[x]['unit_text'] if prod_info[x] else None)
-        df["ean"] = df['product_id'].apply(lambda x: prod_info[x]['ean'] if prod_info[x] else None)
-        df["description"] = df['product_id'].apply(lambda x: prod_info[x]['description'] if prod_info[x] else None)
+        df["unit_value"] = df['product_id'].apply(
+            lambda x: prod_info[x]['unit_value'] if prod_info[x] else None)
+        df["unit_text"] = df['product_id'].apply(
+            lambda x: prod_info[x]['unit_text'] if prod_info[x] else None)
+        df["ean"] = df['product_id'].apply(
+            lambda x: prod_info[x]['ean'] if prod_info[x] else None)
+        df["description"] = df['product_id'].apply(
+            lambda x: prod_info[x]['description'] if prod_info[x] else None)
 
         df["sales_denomination"].replace('\n', '. ', regex=True, inplace=True)
         df["description"].replace('\n', '. ', regex=True, inplace=True)
@@ -479,8 +499,10 @@ class DbInterface():
         df["unitary_price"] = df["label"].apply(lambda x: x.split(' ')[1])
         df["unitary_measure"] = df["label"].apply(lambda x: x.split(' ')[3])
 
-        df["store_type"] = df["store_universal_id"].apply(lambda x: x.split('_')[-1])
-        df["store_universal_id"] = df["store_universal_id"].apply(lambda x: x.split('_')[0] + '_' + x.split('_')[1])
+        df["store_type"] = df["store_universal_id"].apply(
+            lambda x: x.split('_')[-1])
+        df["store_universal_id"] = df["store_universal_id"].apply(
+            lambda x: x.split('_')[0] + '_' + x.split('_')[1])
 
         try:
             df.sort_values(["last_updated", "ean", "store_universal_id", "market"],

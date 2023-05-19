@@ -6,7 +6,6 @@ import sys
 import os
 import json
 sys.path.append(os.getcwd())
-# sys.path.append(f'{os.getcwd()}/scrapy_celery_worker')
 
 POSTAL_CODES_COUNT = 5
 STORES_PER_MARKET = 50
