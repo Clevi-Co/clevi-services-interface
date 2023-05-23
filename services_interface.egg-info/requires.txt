@@ -1,0 +1,5 @@
+pymongo
+python-dotenv
+bson
+pandas
+scrapy

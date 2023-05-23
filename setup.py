@@ -1,10 +1,10 @@
 from setuptools import setup
 
 setup(
-    name='db_interface',
-    version='0.0.1',
-    description='My private package from private github repo',
-    url='https://github.com/Esposito-Ettore-0302/clevi-pip',
+    name='services_interface',
+    version='1.0.0',
+    description='Clevi package for interfaces',
+    url='https://github.com/Clevi-Co/clevi-services-interface',
     author='Clevi Co',
     author_email='',
     license='unlicense',
