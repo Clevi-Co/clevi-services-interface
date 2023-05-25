@@ -395,6 +395,29 @@ class DbInterface():
             f"Product prices scraped today: {count_fast}\nProduct that needs to be hard scraped: {len(products_scrape_parameters)}")
         return products_scrape_parameters
 
+
+    def get_product_store_data_to_dump(self):
+        product_store_data = self.db[self.collection_name_product_stores_data].find(
+            {},
+            {
+                "_id": 0,
+                "code": 0,
+                "market": 0,
+                "price": 1,
+                "discounted_price": 1,
+                "discount_rate": 0,
+                "label": 0,
+                "product_page_uri": 0,
+                "scrape_parameters": 0,
+                "product_id": 1,
+                "store_id": 0,
+                "store_universal_id": 1,
+                "timeseries_meta": 0,
+                "last_updated": 1
+            }
+        )
+        return list(product_store_data)
+
     def extract_brand_data(self, brand_filter):
         """Dump a csv file with the price data of products specified by the brand filter for each store (NO historical, therefore the couple 'store' and 'product_id' is univoque)
         """
