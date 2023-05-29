@@ -59,5 +59,6 @@ class BlobInterface:
     def find_blobs_by_tags(self, query: str):
         """
         Find all blobs with a given tag and returns them as an iterable
+        Query sintax: https://learn.microsoft.com/en-us/azure/storage/blobs/storage-manage-find-blobs?tabs=azure-portal
         """
         return self.blob_container_client.find_blobs_by_tags(query)
