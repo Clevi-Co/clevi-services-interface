@@ -1,1 +1,1 @@
-from blob_interface import BlobInterface
+from .blob_interface import BlobInterface
