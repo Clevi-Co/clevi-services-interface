@@ -396,23 +396,15 @@ class DbInterface():
         return products_scrape_parameters
 
 
-    def get_product_store_data_to_dump(self):
+    def get_product_store_data_to_dump(self) -> list[dict]:
         product_store_data = self.db[self.collection_name_product_stores_data].find(
             {},
             {
                 "_id": 0,
-                "code": 0,
-                "market": 0,
                 "price": 1,
                 "discounted_price": 1,
-                "discount_rate": 0,
-                "label": 0,
-                "product_page_uri": 0,
-                "scrape_parameters": 0,
                 "product_id": 1,
-                "store_id": 0,
                 "store_universal_id": 1,
-                "timeseries_meta": 0,
                 "last_updated": 1
             }
         )
