@@ -62,3 +62,9 @@ class BlobInterface:
         Query sintax: https://learn.microsoft.com/en-us/azure/storage/blobs/storage-manage-find-blobs?tabs=azure-portal
         """
         return self.blob_container_client.find_blobs_by_tags(query)
+
+    def delete_blob_by_name(self, blob_name: str, delete_snapshots: bool):
+        """
+        Delete a blob by its name and possibly its snapshots
+        """
+        self.blob_container_client.delete_blob(blob_name, "include" if delete_snapshots else "only")
