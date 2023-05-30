@@ -5,7 +5,7 @@ import logging
 from dotenv import load_dotenv
 import os
 from dataclasses import asdict
-from datetime import datetime
+from datetime import datetime, timedelta
 from bson.son import SON
 from math import sqrt, cos, radians
 import pandas as pd
@@ -395,9 +395,14 @@ class DbInterface():
             f"Product prices scraped today: {count_fast}\nProduct that needs to be hard scraped: {len(products_scrape_parameters)}")
         return products_scrape_parameters
 
-    def get_product_store_data_to_dump(self) -> list[dict]:
+    def get_product_store_data_to_dump(self, days_to_skip = 3) -> list[dict]:
+        """
+        Get the data older than 'days_to_skip' days ago
+        """
+
+        date = datetime.now() - timedelta(days=days_to_skip)
         product_store_data = self.db[self.collection_name_product_stores_data].find(
-            {},
+            {"last_updated": {"$lte": datetime(date.year, date.month, date.day)}},
             {
                 "_id": 0,
                 "price": 1,
@@ -533,8 +538,9 @@ class DbInterface():
         df.to_csv("res.csv", index=False, quoting=csv.QUOTE_ALL)
         logging.info('File saved as res.csv')
 
-    def delete_product_store_date(self):
-        return self.db[self.collection_name_product_stores_data].delete_many({})
+    def delete_product_store_date(self, days_to_skip = 3):
+        date = datetime.now() - timedelta(days=days_to_skip)
+        return self.db[self.collection_name_product_stores_data].delete_many({"last_updated": {"$lte": datetime(date.year, date.month, date.day)}})
 
     def _print_req_info(self, text: str = ""):
         """Log last MongoDB request info together with a text"""
