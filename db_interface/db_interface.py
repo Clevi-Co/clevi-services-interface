@@ -341,10 +341,6 @@ class DbInterface():
         cursor_geo_points = self.misc_db[self.COLLECTION_NAME_GEO_POINTS]
         return list(cursor_geo_points.find(filter))
 
-    def get_markets(self, filter: dict = {}):
-        cursor_markets = self.misc_db[self.COLLECTION_NAME_MARKETS]
-        return list(cursor_markets.find(filter))
-
     def get_stores(self, filter: dict = {}):
         cursor_stores = self.db[self.COLLECTION_NAME_STORES]
         return list(cursor_stores.find(filter))
