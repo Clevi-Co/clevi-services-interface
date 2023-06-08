@@ -27,7 +27,7 @@ class DbInterface():
         self.COLLECTION_NAME_PRODUCT_STORES_DATA = os.getenv(
             "COSMOS_COLLECTION_NAME_PRODUCT_STORES_DATA")
 
-        env_variables = set(self.COLLECTION_NAME_POSTAL_CODES, self.COLLECTION_NAME_MARKETS, self.COLLECTION_NAME_PRODUCTS, self.COLLECTION_NAME_LOCATIONS, self.COLLECTION_NAME_STORES, self.COLLECTION_NAME_PRODUCT_STORES_DATA)
+        env_variables = (self.COLLECTION_NAME_POSTAL_CODES, self.COLLECTION_NAME_MARKETS, self.COLLECTION_NAME_PRODUCTS, self.COLLECTION_NAME_LOCATIONS, self.COLLECTION_NAME_STORES, self.COLLECTION_NAME_PRODUCT_STORES_DATA)
         if [x for x in env_variables if x is None]:
             raise Exception(f"NO ENV variables found. {env_variables} are missing")
 
