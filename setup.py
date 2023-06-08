@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='services_interface',
-    version='1.1.0',
+    version='1.1.1',
     description='Clevi package for interfaces',
     url='https://github.com/Clevi-Co/clevi-services-interface',
     author='Clevi Co',
