@@ -49,15 +49,6 @@ class DbInterface():
 
         self.debug = debug
         self.is_mock = is_mock
-        # if self.debug:
-        #     self.collection_name_products = COLLECTION_NAME_PRODUCTS_TEST
-        #     self.collection_name_locations = COLLECTION_NAME_LOCATIONS_TEST
-        #     self.collection_name_stores = COLLECTION_NAME_STORES_TEST
-        # else:
-        self.collection_name_products = COLLECTION_NAME_PRODUCTS
-        self.collection_name_locations = COLLECTION_NAME_LOCATIONS
-        self.collection_name_stores = COLLECTION_NAME_STORES
-        self.collection_name_product_stores_data = COLLECTION_NAME_PRODUCT_STORES_DATA
 
     def configure_indexes(self):
         self.db[self.COLLECTION_NAME_LOCATIONS].create_index(
@@ -210,18 +201,18 @@ class DbInterface():
         return res
 
     def get_market_products(self, market: str):
-        it_products = self.db[self.collection_name_products].find({
+        it_products = self.db[self.COLLECTION_NAME_PRODUCTS].find({
             "market": market
         })
         return list(it_products)
 
     def get_store_products_ids(self, store_id: str):
-        products_ids = self.db[self.collection_name_product_stores_data].distinct(
+        products_ids = self.db[self.COLLECTION_NAME_PRODUCT_STORES_DATA].distinct(
             'timeseries_meta.product_id', {'timeseries_meta.store_universal_id': store_id})
         return list(products_ids)
 
     def get_market_stores(self, market: str):
-        it_stores = self.db[self.collection_name_stores].find({
+        it_stores = self.db[self.COLLECTION_NAME_STORES].find({
             "market": market
         })
         return list(it_stores)
@@ -237,13 +228,13 @@ class DbInterface():
                 {("_id", 0), ("timeseries_meta.product_id", 0), ("last_updated", 1)})}
         ]
         most_recent_date = list(
-            self.db[self.collection_name_product_stores_data].aggregate(pipeline))
+            self.db[self.COLLECTION_NAME_PRODUCT_STORES_DATA].aggregate(pipeline))
 
         if len(most_recent_date) == 0:
             logging.warning(
                 f'No products_data_found for store {store_id} for ids {product_ids}')
             return []
-        it_products_data = self.db[self.collection_name_product_stores_data].find({
+        it_products_data = self.db[self.COLLECTION_NAME_PRODUCT_STORES_DATA].find({
             "timeseries_meta.store_universal_id": store_id,
             "timeseries_meta.product_id": {"$in": product_ids},
             "last_updated": {"$gte": most_recent_date[0]['last_updated']}
