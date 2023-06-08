@@ -34,7 +34,7 @@ class DbInterface():
         if db_connection is None and db_connection_misc is None:
             MONGO_DATABASE = os.getenv("MONGO_DATABASE")
             COSMOS_CONNECTION_STRING = os.getenv("COSMOS_CONNECTION_STRING")
-            MONGO_MISC_DATABASE = os.getenv("CosmosDBDatabaseMiscDataName")
+            MONGO_MISC_DATABASE = os.getenv("MONGO_MISC_DATABASE")
 
             if MONGO_DATABASE is None or MONGO_MISC_DATABASE is None or COSMOS_CONNECTION_STRING is None:
                 raise Exception(
