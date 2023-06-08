@@ -8,8 +8,6 @@ from dataclasses import asdict
 from datetime import datetime, timedelta
 from bson.son import SON
 from math import sqrt, cos, radians
-import pandas as pd
-import csv
 
 
 class DbInterface():
@@ -409,130 +407,6 @@ class DbInterface():
             }
         )
         return list(product_store_data)
-
-    def extract_brand_data(self, brand_filter):
-        """Dump a csv file with the price data of products specified by the brand filter for each store (NO historical, therefore the couple 'store' and 'product_id' is univoque)
-        """
-        prod_id_list = list(
-            self.db[self.COLLECTION_NAME_PRODUCTS].distinct('_id', brand_filter))
-
-        pipeline = [
-            {'$match': {'timeseries_meta.product_id': {'$in': prod_id_list}}},
-            {'$group': {
-                '_id': {'product_id': '$timeseries_meta.product_id',
-                        'store_universal_id': '$timeseries_meta.store_universal_id'},
-                'last_updated': {'$max': '$last_updated'},
-                'product_id': {'$first': '$product_id'},
-                'price': {'$first': '$price'},
-                'discounted_price': {'$first': '$discounted_price'},
-                'discount_rate': {'$first': '$discount_rate'},
-                'label': {'$first': '$label'}
-            }},
-            {'$project': {
-                '_id': 0,
-                'product_id': '$_id.product_id',
-                'store_universal_id': '$_id.store_universal_id',
-                'last_updated': 1,
-                'price': 1,
-                'discounted_price': 1,
-                'discount_rate': 1,
-                'label': 1
-            }}
-        ]
-
-        result = self.db[self.COLLECTION_NAME_PRODUCT_STORES_DATA].aggregate(
-            pipeline)
-
-        df = pd.DataFrame(result)
-        # df["year"] = df["last_updated"].apply(lambda x: x.year)
-        # df["month"] = df["last_updated"].apply(lambda x: x.month)
-        # df["day"] = df["last_updated"].apply(lambda x: x.day)
-
-        # stores = list(self.db[self.COLLECTION_NAME_STORES].find(
-        #     {"$and": [{'_id':{'$in': df["store_universal_id"].to_list()}}, {"$neq": {"meta.lockers": True}}]},
-        #     {'_id': 1, 'geo_point': 1}
-        # ))
-        chunk_size = 100
-        stores = []
-        for i in range(0, len(df["store_universal_id"]), chunk_size):
-            ids_chunk = list(df["store_universal_id"][i:i + chunk_size])
-            stores_chunk = list(self.db[self.COLLECTION_NAME_STORES].find(
-                {"$and": [{'_id': {'$in': ids_chunk}},
-                          {"meta.lockers": {"$ne": True}}]},
-                {'_id': 1, 'geo_point': 1}
-            ))
-            stores.extend(stores_chunk)
-
-        geopoints = {store['_id']: store['geo_point'] for store in stores}
-
-        # "meta.locker" che deve essere False e sul campo "service" che deve essere "pickup"
-
-        df["provincia"] = df['store_universal_id'].apply(
-            lambda x: geopoints[x]['state_code'] if geopoints.get(x) else None)
-        df["CAP"] = df['store_universal_id'].apply(
-            lambda x: geopoints[x]['postal_code'] if geopoints.get(x) else None)
-        df["address"] = df['store_universal_id'].apply(
-            lambda x: geopoints[x]['address'] if geopoints.get(x) else None)
-
-        # if internal:
-        df["lat"] = df['store_universal_id'].apply(
-            lambda x: geopoints[x]['lat'] if geopoints.get(x) else None)
-        df["long"] = df['store_universal_id'].apply(
-            lambda x: geopoints[x]['long'] if geopoints.get(x) else None)
-
-        products = []
-        for i in range(0, len(df["product_id"]), chunk_size):
-            ids_chunk = list(df["product_id"][i:i + chunk_size])
-            products_chunk = list(self.db[self.COLLECTION_NAME_PRODUCTS].find(
-                {'_id': {'$in': ids_chunk}},
-                {'_id': 1, 'market': 1, 'sales_denomination': 1, 'unit_value': 1, 'unit_text': 1, 'ean': 1,
-                 'description': 1}
-            ))
-            products.extend(products_chunk)
-
-        prod_info = {prod['_id']: {'market': prod['market'], 'sales_denomination': prod['sales_denomination'],
-                                   'unit_value': prod['unit_value'],
-                                   'unit_text': prod['unit_text'], 'ean': prod['ean'],
-                                   'description': prod["description"]} for prod in products}
-
-        df["market"] = df['product_id'].apply(
-            lambda x: prod_info[x]['market'] if prod_info[x] else None)
-        df["sales_denomination"] = df['product_id'].apply(
-            lambda x: prod_info[x]['sales_denomination'] if prod_info[x] else None)
-        df["unit_value"] = df['product_id'].apply(
-            lambda x: prod_info[x]['unit_value'] if prod_info[x] else None)
-        df["unit_text"] = df['product_id'].apply(
-            lambda x: prod_info[x]['unit_text'] if prod_info[x] else None)
-        df["ean"] = df['product_id'].apply(
-            lambda x: prod_info[x]['ean'] if prod_info[x] else None)
-        df["description"] = df['product_id'].apply(
-            lambda x: prod_info[x]['description'] if prod_info[x] else None)
-
-        df["sales_denomination"].replace('\n', '. ', regex=True, inplace=True)
-        df["description"].replace('\n', '. ', regex=True, inplace=True)
-
-        df["unitary_price"] = df["label"].apply(lambda x: x.split(' ')[1])
-        df["unitary_measure"] = df["label"].apply(lambda x: x.split(' ')[3])
-
-        df["store_type"] = df["store_universal_id"].apply(
-            lambda x: x.split('_')[-1])
-        df["store_universal_id"] = df["store_universal_id"].apply(
-            lambda x: x.split('_')[0] + '_' + x.split('_')[1])
-
-        try:
-            df.sort_values(["last_updated", "ean", "store_universal_id", "market"],
-                           ascending=[False, False, False, False],
-                           inplace=True)
-        except Exception as err:
-            logging.error(err)
-
-        # if not internal:
-        #     df = df[["market", "provincia", "CAP", "store_universal_id",
-        #                 "address", "store_type", "ean","description", "sales_denomination", "unit_value", "unit_text",
-        #                 "price", "discounted_price", "discount_rate", "label", "unitary_price", "unitary_measure"]]
-
-        df.to_csv("res.csv", index=False, quoting=csv.QUOTE_ALL)
-        logging.info('File saved as res.csv')
 
     def delete_product_store_date(self, days_to_skip: int):
         """
