@@ -14,32 +14,38 @@ import csv
 
 class DbInterface():
 
-    def __init__(self, db_connection=None, debug=False, is_mock=False):
+    def __init__(self, db_connection=None, db_connection_misc=None, debug=False, is_mock=False):
         load_dotenv()
-        COLLECTION_NAME_PRODUCTS = os.getenv(
+        self.COLLECTION_NAME_POSTAL_CODES = os.getenv(
+            "COSMOS_COLLECTION_NAME_POSTAL_CODES")
+        self.COLLECTION_NAME_MARKETS = os.getenv("COSMOS_COLLECTION_NAME_MARKETS")
+        self.COLLECTION_NAME_PRODUCTS = os.getenv(
             "COSMOS_COLLECTION_NAME_PRODUCTS")
-        COLLECTION_NAME_LOCATIONS = os.getenv(
+        self.COLLECTION_NAME_LOCATIONS = os.getenv(
             "COSMOS_COLLECTION_NAME_LOCATIONS")
-        COLLECTION_NAME_STORES = os.getenv("COSMOS_COLLECTION_NAME_STORES")
-        COLLECTION_NAME_PRODUCT_STORES_DATA = os.getenv(
+        self.COLLECTION_NAME_STORES = os.getenv("COSMOS_COLLECTION_NAME_STORES")
+        self.COLLECTION_NAME_PRODUCT_STORES_DATA = os.getenv(
             "COSMOS_COLLECTION_NAME_PRODUCT_STORES_DATA")
 
-        if COLLECTION_NAME_PRODUCTS is None or COLLECTION_NAME_LOCATIONS is None or COLLECTION_NAME_STORES is None or COLLECTION_NAME_PRODUCT_STORES_DATA is None:
-            raise Exception(
-                "NO ENV variables found. COLLECTION_NAME_PRODUCTS, COLLECTION_NAME_LOCATIONS, COLLECTION_NAME_STORES or COLLECTION_NAME_PRODUCT_STORES_DATA are missing")
+        env_variables = set(COLLECTION_NAME_POSTAL_CODES, COLLECTION_NAME_MARKETS, COLLECTION_NAME_PRODUCTS, COLLECTION_NAME_LOCATIONS, COLLECTION_NAME_STORES, COLLECTION_NAME_PRODUCT_STORES_DATA)
+        if [x for x in env_variables if x is None]:
+            raise Exception(f"NO ENV variables found. {env_variables} are missing")
 
-        if db_connection is None:
+        if db_connection is None and db_connection_misc is None:
             MONGO_DATABASE = os.getenv("MONGO_DATABASE")
             COSMOS_CONNECTION_STRING = os.getenv("COSMOS_CONNECTION_STRING")
+            MONGO_MISC_DATABASE = os.getenv("CosmosDBDatabaseMiscDataName")
 
-            if MONGO_DATABASE is None or COSMOS_CONNECTION_STRING is None:
+            if MONGO_DATABASE is None or MONGO_MISC_DATABASE is None or COSMOS_CONNECTION_STRING is None:
                 raise Exception(
-                    "NO ENV variables found. MONGO_DATABASE or COSMOS_CONNECTION_STRING are missing")
+                    "NO ENV variables found. MONGO_DATABASE, MONGO_MISC_DATABASE or COSMOS_CONNECTION_STRING are missing")
 
             client = pymongo.MongoClient(COSMOS_CONNECTION_STRING)
             self.db = client[MONGO_DATABASE]
+            self.misc_db = client[MONGO_MISC_DATABASE]
         else:
             self.db = db_connection
+            self.misc_db = db_connection_misc
 
         self.debug = debug
         self.is_mock = is_mock
@@ -54,33 +60,35 @@ class DbInterface():
         self.collection_name_product_stores_data = COLLECTION_NAME_PRODUCT_STORES_DATA
 
     def configure_indexes(self):
-        self.db[self.collection_name_locations].create_index(
+        self.db[self.COLLECTION_NAME_LOCATIONS].create_index(
             [("postal_codes", 1)])
 
-        self.db[self.collection_name_stores].create_index(
+        self.db[self.COLLECTION_NAME_STORES].create_index(
             [("market", 1), ("last_updated", -1)])
 
         try:
             self.db.validate_collection(
-                self.collection_name_product_stores_data)
+                self.COLLECTION_NAME_PRODUCT_STORES_DATA)
         except pymongo.errors.OperationFailure:  # If the collection doesn't exist
             if not self.is_mock:
-                self.db.create_collection(self.collection_name_product_stores_data, timeseries={
+                self.db.create_collection(self.COLLECTION_NAME_PRODUCT_STORES_DATA, timeseries={
                     "timeField": "last_updated",
                     "metaField": "_id",
                     "granularity": "minutes"
                 })
-        self.db[self.collection_name_product_stores_data].create_index(
-            [("timeseries_meta.product_id", 1), ("timeseries_meta.store_universal_id", 1), ("last_updated", 1)])
+        # self.db[self.COLLECTION_NAME_PRODUCT_STORES_DATA].create_index(
+        #     [("timeseries_meta.product_id", 1), ("timeseries_meta.store_universal_id", 1), ("last_updated", 1)])
+        self.db[self.COLLECTION_NAME_PRODUCT_STORES_DATA].create_index(
+            [("last_updated", 1), ("timeseries_meta.store_universal_id", 1), ("timeseries_meta.product_id", 1)])
 
     def upsert_store_items(self, items: list[StoreItem], location_item: LocationItem):
         # Index configuration
         try:
-            self.db.validate_collection(self.collection_name_locations)
-            self.db.validate_collection(self.collection_name_stores)
+            self.db.validate_collection(self.COLLECTION_NAME_LOCATIONS)
+            self.db.validate_collection(self.COLLECTION_NAME_STORES)
         except pymongo.errors.OperationFailure:
             logging.warning(
-                f"Collection {self.collection_name_locations} or {self.collection_name_stores} doesn't exist and will be created")
+                f"Collection {self.COLLECTION_NAME_LOCATIONS} or {self.COLLECTION_NAME_STORES} doesn't exist and will be created")
             self.configure_indexes()
 
         # Upload
@@ -102,7 +110,7 @@ class DbInterface():
                 raise ValueError(
                     "Found two different market values for two different stores. Each store in the list should have the same market value.")
             bulk_updates.append(UpdateOne(item_filter, item_set, upsert=True))
-        self.db[self.collection_name_stores].bulk_write(
+        self.db[self.COLLECTION_NAME_STORES].bulk_write(
             bulk_updates, ordered=False)
 
         store_ids = list(store_ids)
@@ -112,7 +120,7 @@ class DbInterface():
             "postal_codes": location_item.postal_codes,
             "last_updated": datetime.utcnow(),
         }}
-        self.db[self.collection_name_locations].update_one(
+        self.db[self.COLLECTION_NAME_LOCATIONS].update_one(
             location_filter, location_set, upsert=True)
 
         if self.debug:
@@ -120,10 +128,10 @@ class DbInterface():
 
     def upsert_product_items(self, items: list[ProductItem]):
         try:
-            self.db.validate_collection(self.collection_name_products)
+            self.db.validate_collection(self.COLLECTION_NAME_PRODUCTS)
         except pymongo.errors.OperationFailure:
             logging.warning(
-                f"Collection {self.collection_name_products} doesn't exist and will be created")
+                f"Collection {self.COLLECTION_NAME_PRODUCTS} doesn't exist and will be created")
             self.configure_indexes()
 
         bulk_updates = []
@@ -135,7 +143,7 @@ class DbInterface():
             item["last_updated"] = last_updated
             item_set = {"$set": item}
             bulk_updates.append(UpdateOne(item_filter, item_set, upsert=True))
-        self.db[self.collection_name_products].bulk_write(
+        self.db[self.COLLECTION_NAME_PRODUCTS].bulk_write(
             bulk_updates, ordered=False)
 
         if self.debug:
@@ -149,10 +157,10 @@ class DbInterface():
 
         try:
             self.db.validate_collection(
-                self.collection_name_product_stores_data)
+                self.COLLECTION_NAME_PRODUCT_STORES_DATA)
         except pymongo.errors.OperationFailure:  # If the collection doesn't exist
             logging.warning(
-                f"Collection {self.collection_name_product_stores_data} doesn't exist and will be created")
+                f"Collection {self.COLLECTION_NAME_PRODUCT_STORES_DATA} doesn't exist and will be created")
             self.configure_indexes()
         # self.db[self.collection_name_product_stores_data].create_index(
             # [("timeseries_meta.product_id", 1), ("timeseries_meta.store_universal_id", 1), ("last_updated", 1)])
@@ -168,12 +176,12 @@ class DbInterface():
             item["timeseries_meta"]["store_universal_id"] = item["store_universal_id"]
             item["last_updated"] = last_updated
             items_transformed.append(item)
-        self.db[self.collection_name_product_stores_data].insert_many(
+        self.db[self.COLLECTION_NAME_PRODUCT_STORES_DATA].insert_many(
             items_transformed, ordered=False
         )
 
         # Update StoreItem `last_scraped` value
-        self.db[self.collection_name_stores].update_one(
+        self.db[self.COLLECTION_NAME_STORES].update_one(
             {'_id': store_universal_id}, {'$set': {'last_scraped': last_updated}})
 
         if self.debug:
@@ -402,7 +410,7 @@ class DbInterface():
         """
 
         date = datetime.now() - timedelta(days=days_to_skip if days_to_skip >= 0 else 0)
-        product_store_data = self.db[self.collection_name_product_stores_data].find(
+        product_store_data = self.db[self.COLLECTION_NAME_PRODUCT_STORES_DATA].find(
             {"last_updated": {"$lte": datetime(date.year, date.month, date.day)}},
             {
                 "_id": 0,
@@ -545,7 +553,7 @@ class DbInterface():
         if the number il less than zero is replaced with zero
         """
         date = datetime.now() - timedelta(days=days_to_skip if days_to_skip >= 0 else 0)
-        return self.db[self.collection_name_product_stores_data].delete_many({"last_updated": {"$lte": datetime(date.year, date.month, date.day)}})
+        return self.db[self.COLLECTION_NAME_PRODUCT_STORES_DATA].delete_many({"last_updated": {"$lte": datetime(date.year, date.month, date.day)}})
 
     def _print_req_info(self, text: str = ""):
         """Log last MongoDB request info together with a text"""
