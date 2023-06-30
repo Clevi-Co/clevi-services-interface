@@ -21,17 +21,24 @@ class BlobInterface:
             CONTAINER_NAME
         )
 
+    def close(self):
+        self.blob_container_client.close()
+        self.blob_service_client.close()
+
     def upload_json_block_blob(
         self,
         blob_name: str,
         blob_json: dict[any:any],
         blob_tags: dict[str:str],
         compression_level: int = 9,
+        remove_spaces_from_json: bool = True
     ) -> None:
         """
         Compresses the given json and upload it on azure blob storage
         """
-        content_string = json.dumps(blob_json).replace(" ", "")
+        content_string = json.dumps(blob_json)
+        if remove_spaces_from_json:
+            content_string = content_string.replace(" ", "")
         content_bytes = content_string.encode("utf-8")
         blob_content = zlib.compress(content_bytes, level=compression_level)
 
@@ -51,7 +58,7 @@ class BlobInterface:
         blob_data = blob_client.download_blob().readall()
         uncompressed = zlib.decompress(blob_data)
         string_data = uncompressed.decode("utf-8")
-        dict_data = dict(string_data)
+        dict_data = json.loads(string_data)
         tags = blob_client.get_blob_tags()
         dict_data["tags"] = tags
         return dict_data

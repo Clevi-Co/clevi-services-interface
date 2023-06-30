@@ -388,15 +388,18 @@ class DbInterface():
             f"Product prices scraped today: {count_fast}\nProduct that needs to be hard scraped: {len(products_scrape_parameters)}")
         return products_scrape_parameters
 
-    def get_product_store_data_to_dump(self, days_to_skip: int) -> list[dict]:
+    def get_product_store_data_to_dump(self, days_to_skip: int, product_id: str) -> list[dict]:
         """
-        Get the data from product_store_data older than 'days_to_skip' days ago
+        Get the data from product_store_data for a given product older than 'days_to_skip' days ago
         if the number il less than zero is replaced with zero
         """
 
         date = datetime.now() - timedelta(days=days_to_skip if days_to_skip >= 0 else 0)
         product_store_data = self.db[self.COLLECTION_NAME_PRODUCT_STORES_DATA].find(
-            {"last_updated": {"$lte": datetime(date.year, date.month, date.day)}},
+            {
+                "product_id": product_id,
+                "last_updated": {"$lte": datetime(date.year, date.month, date.day)}
+            },
             {
                 "_id": 0,
                 "price": 1,
@@ -408,13 +411,19 @@ class DbInterface():
         )
         return list(product_store_data)
 
-    def delete_product_store_date(self, days_to_skip: int):
+    def delete_dumped_product_store_data(self, days_to_skip: int, ids_to_avoid: list[str]):
         """
         Delete data in product_store_data older than days_to_skip days
         if the number il less than zero is replaced with zero
+        It avoids the products whose ids are passed as parameters
         """
         date = datetime.now() - timedelta(days=days_to_skip if days_to_skip >= 0 else 0)
-        return self.db[self.COLLECTION_NAME_PRODUCT_STORES_DATA].delete_many({"last_updated": {"$lte": datetime(date.year, date.month, date.day)}})
+        return self.db[self.COLLECTION_NAME_PRODUCT_STORES_DATA].delete_many(
+            {
+                "product_id": {"$nin": ids_to_avoid},
+                "last_updated": {"$lte": datetime(date.year, date.month, date.day)}
+            }
+        )
 
     def _print_req_info(self, text: str = ""):
         """Log last MongoDB request info together with a text"""
