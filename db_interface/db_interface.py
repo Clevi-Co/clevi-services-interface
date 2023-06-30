@@ -70,6 +70,12 @@ class DbInterface():
         self.db[self.COLLECTION_NAME_PRODUCT_STORES_DATA].create_index(
             [("last_updated", 1), ("timeseries_meta.store_universal_id", 1), ("timeseries_meta.product_id", 1)])
 
+    def close(self):
+        """
+        Close connection to the database
+        """
+        self.db.client.close()
+
     def upsert_store_items(self, items: list[StoreItem], location_item: LocationItem):
         # Index configuration
         try:
